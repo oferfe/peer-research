@@ -1,0 +1,497 @@
+=== REVERSE VALIDATION REPORT (GROUNDING CHECK) ===
+Methodology: The AI read ONLY the generated biography and attempted to extract the original parameters.
+
+--- Respondent ID: synthetic_1 ---
+Question: I am employed as a peer with lived experience in a paid job.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: My employment scope as a peer is at least 25%
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: I have at least 3 months of seniority in the peer role.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: I am 18 years old or older.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Do you have a legal guardian appointed for bodily/personal matters?
+  Original Data:  No
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: I agree to participate and confirm that the questionnaires will be used for research purposes only.
+  Original Data:  Yes
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: What is your current role as a peer in the workplace?
+  Original Data:  Peer Support Worker
+  Extracted Data: Peer Support Worker
+  Status:         [MATCH ✓]
+
+Question: My role type as a peer:
+  Original Data:  Traditional role where I add the use of lived experience
+  Extracted Data: Traditional role where I add the use of lived experience
+  Status:         [MATCH ✓]
+
+Question: Have you undergone training as a peer:
+  Original Data:  No, I have not undergone formal training
+  Extracted Data: No, I have not undergone formal training
+  Status:         [MATCH ✓]
+
+Question: What is the main framework in which you currently work as a peer?
+  Original Data:  Community rehabilitation services (housing / employment / leisure)
+  Extracted Data: Community rehabilitation services (housing / employment / leisure)
+  Status:         [MATCH ✓]
+
+Question: What type of work do you do in terms of the way you support service recipients:
+  Original Data:  Individual work
+  Extracted Data: Individual work
+  Status:         [MATCH ✓]
+
+Question: How many years have you been working as a peer:
+  Original Data:  1-2 years
+  Extracted Data: 1-2 years
+  Status:         [MATCH ✓]
+
+Question: What is the scope of your current position as a peer:
+  Original Data:  Quarter to half time (between 10 and 20 hours a week)
+  Extracted Data: Quarter to half time (between 10 and 20 hours a week)
+  Status:         [MATCH ✓]
+
+Question: Salary terms:
+  Original Data:  Work by output / Freelance
+  Extracted Data: Work by output / Freelance
+  Status:         [MATCH ✓]
+
+Question: What is your monthly net income from your work as a peer?
+  Original Data:  Up to 1,500 NIS
+  Extracted Data: Up to 1,500 NIS
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with your manager(s)?
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with colleagues/coworkers?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with service recipients?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Gender
+  Original Data:  Man
+  Extracted Data: Man
+  Status:         [MATCH ✓]
+
+Question: Marital status:
+  Original Data:  Single
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: Children:
+  Original Data:  Number of children (specify)
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: Housing framework:
+  Original Data:  With nuclear family (parents and siblings)
+  Extracted Data: With nuclear family (parents and siblings)
+  Status:         [MATCH ✓]
+
+Question: High school education:
+  Original Data:  12 years of schooling in regular education
+  Extracted Data: 12 years of schooling in regular education
+  Status:         [MATCH ✓]
+
+Question: Post-secondary education:
+  Original Data:  Practical engineer studies
+  Extracted Data: Practical engineer studies
+  Status:         [MATCH ✓]
+
+Question: In which region of the country do you currently live?
+  Original Data:  Sharon
+  Extracted Data: Sharon
+  Status:         [MATCH ✓]
+
+Question: Evacuation from home
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Repeated stays in a protected space due to sirens
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Loss of a close person in circumstances related to the war
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: My own reserve duty
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Reserve duty of a first-degree family member
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Another significant event during this period in the context of the war. If so, specify:
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+>>> VALIDATION SUMMARY FOR synthetic_1:
+    Total Explicit Matches: 27
+    Total Mismatches: 0
+    Missing from Bio Narrative: 4
+    Extraction Accuracy (Match Score): 100.0%
+==============================================================
+
+--- Respondent ID: synthetic_2 ---
+Question: I am employed as a peer with lived experience in a paid job.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: My employment scope as a peer is at least 25%
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: I have at least 3 months of seniority in the peer role.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: I am 18 years old or older.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Do you have a legal guardian appointed for bodily/personal matters?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: I agree to participate and confirm that the questionnaires will be used for research purposes only.
+  Original Data:  Yes
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: What is your current role as a peer in the workplace?
+  Original Data:  Peer Support Worker
+  Extracted Data: Peer Support Worker
+  Status:         [MATCH ✓]
+
+Question: My role type as a peer:
+  Original Data:  Other
+  Extracted Data: Dedicated peer role
+  Status:         [MISMATCH ✗]
+
+Question: Have you undergone training as a peer:
+  Original Data:  Yes, training through a personal mentoring process
+  Extracted Data: Yes, training through a personal mentoring process
+  Status:         [MATCH ✓]
+
+Question: What is the main framework in which you currently work as a peer?
+  Original Data:  Psychiatric hospital
+  Extracted Data: Psychiatric hospital
+  Status:         [MATCH ✓]
+
+Question: What type of work do you do in terms of the way you support service recipients:
+  Original Data:  Group work
+  Extracted Data: Group work
+  Status:         [MATCH ✓]
+
+Question: How many years have you been working as a peer:
+  Original Data:  Less than a year
+  Extracted Data: Less than a year
+  Status:         [MATCH ✓]
+
+Question: What is the scope of your current position as a peer:
+  Original Data:  Up to a quarter time (up to 10 hours a week)
+  Extracted Data: Up to a quarter time (up to 10 hours a week)
+  Status:         [MATCH ✓]
+
+Question: Salary terms:
+  Original Data:  Work by output / Freelance
+  Extracted Data: Work by output / Freelance
+  Status:         [MATCH ✓]
+
+Question: What is your monthly net income from your work as a peer?
+  Original Data:  7,501-9,000 NIS
+  Extracted Data: 7,501-9,000 NIS
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with your manager(s)?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with colleagues/coworkers?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with service recipients?
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Gender
+  Original Data:  Woman
+  Extracted Data: Woman
+  Status:         [MATCH ✓]
+
+Question: Marital status:
+  Original Data:  Single
+  Extracted Data: Single
+  Status:         [MATCH ✓]
+
+Question: Children:
+  Original Data:  Number of children (specify)
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: Housing framework:
+  Original Data:  Other
+  Extracted Data: Independent
+  Status:         [MISMATCH ✗]
+
+Question: High school education:
+  Original Data:  Less than 12 years of schooling
+  Extracted Data: Less than 12 years of schooling
+  Status:         [MATCH ✓]
+
+Question: Post-secondary education:
+  Original Data:  Master's degree and above
+  Extracted Data: Master's degree and above
+  Status:         [MATCH ✓]
+
+Question: In which region of the country do you currently live?
+  Original Data:  Jerusalem and surrounding area
+  Extracted Data: Jerusalem and surrounding area
+  Status:         [MATCH ✓]
+
+Question: Evacuation from home
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Repeated stays in a protected space due to sirens
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Loss of a close person in circumstances related to the war
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: My own reserve duty
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Reserve duty of a first-degree family member
+  Original Data:  No
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: Another significant event during this period in the context of the war. If so, specify:
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+>>> VALIDATION SUMMARY FOR synthetic_2:
+    Total Explicit Matches: 26
+    Total Mismatches: 2
+    Missing from Bio Narrative: 3
+    Extraction Accuracy (Match Score): 92.9%
+==============================================================
+
+--- Respondent ID: synthetic_3 ---
+Question: I am employed as a peer with lived experience in a paid job.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: My employment scope as a peer is at least 25%
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: I have at least 3 months of seniority in the peer role.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: I am 18 years old or older.
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Do you have a legal guardian appointed for bodily/personal matters?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: I agree to participate and confirm that the questionnaires will be used for research purposes only.
+  Original Data:  Yes
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: What is your current role as a peer in the workplace?
+  Original Data:  Peer Support Worker
+  Extracted Data: Peer Support Worker
+  Status:         [MATCH ✓]
+
+Question: My role type as a peer:
+  Original Data:  Dedicated peer role
+  Extracted Data: Dedicated peer role
+  Status:         [MATCH ✓]
+
+Question: Have you undergone training as a peer:
+  Original Data:  No, I have not undergone formal training
+  Extracted Data: No, I have not undergone formal training
+  Status:         [MATCH ✓]
+
+Question: What is the main framework in which you currently work as a peer?
+  Original Data:  Psychiatric hospital
+  Extracted Data: Psychiatric hospital
+  Status:         [MATCH ✓]
+
+Question: What type of work do you do in terms of the way you support service recipients:
+  Original Data:  Individual work
+  Extracted Data: Individual work
+  Status:         [MATCH ✓]
+
+Question: How many years have you been working as a peer:
+  Original Data:  Over 5 years
+  Extracted Data: Over 5 years
+  Status:         [MATCH ✓]
+
+Question: What is the scope of your current position as a peer:
+  Original Data:  Three-quarters to full time (over 30 hours a week)
+  Extracted Data: Three-quarters to full time (over 30 hours a week)
+  Status:         [MATCH ✓]
+
+Question: Salary terms:
+  Original Data:  Monthly
+  Extracted Data: Monthly
+  Status:         [MATCH ✓]
+
+Question: What is your monthly net income from your work as a peer?
+  Original Data:  7,501-9,000 NIS
+  Extracted Data: 7,501-9,000 NIS
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with your manager(s)?
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with colleagues/coworkers?
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Did you choose to share your psychiatric diagnosis with service recipients?
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Gender
+  Original Data:  Man
+  Extracted Data: Man
+  Status:         [MATCH ✓]
+
+Question: Marital status:
+  Original Data:  Single
+  Extracted Data: Single
+  Status:         [MATCH ✓]
+
+Question: Children:
+  Original Data:  None
+  Extracted Data: None
+  Status:         [MATCH ✓]
+
+Question: Housing framework:
+  Original Data:  Supported housing / Hostel
+  Extracted Data: Supported housing / Hostel
+  Status:         [MATCH ✓]
+
+Question: High school education:
+  Original Data:  12 years of schooling in special education
+  Extracted Data: 12 years of schooling in special education
+  Status:         [MATCH ✓]
+
+Question: Post-secondary education:
+  Original Data:  Bachelor's degree
+  Extracted Data: Bachelor's degree
+  Status:         [MATCH ✓]
+
+Question: In which region of the country do you currently live?
+  Original Data:  Galilee and Valleys
+  Extracted Data: Galilee and Valleys
+  Status:         [MATCH ✓]
+
+Question: Evacuation from home
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Repeated stays in a protected space due to sirens
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Loss of a close person in circumstances related to the war
+  Original Data:  No
+  Extracted Data: Not mentioned
+  Status:         [MISSING IN BIO]
+
+Question: My own reserve duty
+  Original Data:  No
+  Extracted Data: No
+  Status:         [MATCH ✓]
+
+Question: Reserve duty of a first-degree family member
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+Question: Another significant event during this period in the context of the war. If so, specify:
+  Original Data:  Yes
+  Extracted Data: Yes
+  Status:         [MATCH ✓]
+
+>>> VALIDATION SUMMARY FOR synthetic_3:
+    Total Explicit Matches: 29
+    Total Mismatches: 0
+    Missing from Bio Narrative: 2
+    Extraction Accuracy (Match Score): 100.0%
+==============================================================
+
+==============================================================
+=== FINAL RESEARCH SUMMARY ===
+Total Respondents Analyzed: 3
+OVERALL AVERAGE MATCH SCORE: 97.6%
+==============================================================

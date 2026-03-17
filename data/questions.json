@@ -1,0 +1,344 @@
+{
+    "survey_title": "Peer Support Workers Experience Survey",
+    "participant_profiling": [
+      {
+        "section": "Inclusion Criteria",
+        "questions": [
+          {
+            "id": "inc_q1",
+            "question": "I am employed as a peer with lived experience in a paid job.",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "inc_q2",
+            "question": "My employment scope as a peer is at least 25% (approx. 10 hours a week).",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "inc_q3",
+            "question": "I have at least 3 months of seniority in the peer role.",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "inc_q4",
+            "question": "I am 18 years old or older.",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "inc_q5",
+            "question": "Do you have a legal guardian appointed for bodily/personal matters?",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "inc_q6",
+            "question": "I agree to participate and confirm that the questionnaires will be used for research purposes only.",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          }
+        ]
+      },
+      {
+        "section": "Occupational Background",
+        "questions": [
+          {
+            "id": "occ_q1",
+            "question": "What is your current role as a peer in the workplace?",
+            "type": "open_ended"
+          },
+          {
+            "id": "occ_q2",
+            "question": "My role type as a peer:",
+            "type": "multiple_choice",
+            "options": ["Dedicated peer role", "Traditional role where I add the use of lived experience", "Other"]
+          },
+          {
+            "id": "occ_q3",
+            "question": "Have you undergone training as a peer:",
+            "type": "multiple_choice",
+            "options": ["Yes, training in a course(s) designed for peers with lived experience", "Yes, training through a personal mentoring process", "No, I have not undergone formal training", "Other"]
+          },
+          {
+            "id": "occ_q4",
+            "question": "What is the main framework in which you currently work as a peer?",
+            "type": "multiple_choice",
+            "options": ["Psychiatric hospital", "HMO / Health clinic", "Mental health clinic", "Community rehabilitation services (housing / employment / leisure)"]
+          },
+          {
+            "id": "occ_q5",
+            "question": "What type of work do you do in terms of the way you support service recipients:",
+            "type": "multiple_choice",
+            "options": ["Individual work", "Group work", "Combined work (individual + group)", "Other"]
+          },
+          {
+            "id": "occ_q6",
+            "question": "How many years have you been working as a peer:",
+            "type": "multiple_choice",
+            "options": ["Less than a year", "1-2 years", "3-5 years", "Over 5 years"]
+          },
+          {
+            "id": "occ_q9",
+            "question": "What is the scope of your current position as a peer:",
+            "type": "multiple_choice",
+            "options": ["Up to a quarter time (up to 10 hours a week)", "Quarter to half time (between 10 and 20 hours a week)", "Half time to 75% (between 21-30 hours a week)", "Three-quarters to full time (over 30 hours a week)"]
+          },
+          {
+            "id": "occ_q10",
+            "question": "Salary terms:",
+            "type": "multiple_choice",
+            "options": ["Hourly", "Monthly", "Work by output / Freelance", "Other"]
+          },
+          {
+            "id": "occ_q11",
+            "question": "What is your monthly net income from your work as a peer?",
+            "type": "multiple_choice",
+            "options": ["Up to 1,500 NIS", "1,501-3,000 NIS", "3,001-4,500 NIS", "4,501-6,000 NIS", "6,001-7,500 NIS", "7,501-9,000 NIS", "Over 9,000 NIS", "Prefer not to answer"]
+          },
+          {
+            "id": "occ_q12",
+            "question": "Did you choose to share your psychiatric diagnosis with your manager(s)?",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "occ_q13",
+            "question": "Did you choose to share your psychiatric diagnosis with colleagues/coworkers?",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "occ_q14",
+            "question": "Did you choose to share your psychiatric diagnosis with service recipients?",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          }
+        ]
+      },
+      {
+        "section": "Demographics",
+        "questions": [
+          {
+            "id": "demo_q2",
+            "question": "Gender",
+            "type": "multiple_choice",
+            "options": ["Man", "Woman", "Other"]
+          },
+          {
+            "id": "demo_q3",
+            "question": "Marital status:",
+            "type": "multiple_choice",
+            "options": ["Single", "In a relationship", "Married", "Divorced", "Widowed"]
+          },
+          {
+            "id": "demo_q4",
+            "question": "Children:",
+            "type": "multiple_choice",
+            "options": ["None", "Number of children (specify)"]
+          },
+          {
+            "id": "demo_q5",
+            "question": "Housing framework:",
+            "type": "multiple_choice",
+            "options": ["Independent", "With nuclear family (parents and siblings)", "Supported housing / Hostel", "Other"]
+          },
+          {
+            "id": "demo_q6",
+            "question": "High school education:",
+            "type": "multiple_choice",
+            "options": ["Less than 12 years of schooling", "12 years of schooling in special education", "12 years of schooling in regular education", "Full matriculation certificate"]
+          },
+          {
+            "id": "demo_q7",
+            "question": "Post-secondary education:",
+            "type": "multiple_choice",
+            "options": ["Professional courses / Certificate studies", "Practical engineer studies", "Bachelor's degree", "Master's degree and above"]
+          },
+          {
+            "id": "demo_q9",
+            "question": "In which region of the country do you currently live?",
+            "type": "multiple_choice",
+            "options": ["Gaza envelope and near south", "South", "Center and Shfela", "Dan region (Greater Tel Aviv)", "Sharon", "Haifa and Krayot", "Galilee and Valleys", "Golan Heights", "Jerusalem and surrounding area", "Judea and Samaria", "Other"]
+          }
+        ]
+      },
+      {
+        "section": "Iron Swords War - Factual Context",
+        "questions": [
+          {
+            "id": "war_q5",
+            "question": "Evacuation from home",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "war_q6",
+            "question": "Repeated stays in a protected space due to sirens",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "war_q7",
+            "question": "Loss of a close person in circumstances related to the war",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "war_q8",
+            "question": "My own reserve duty",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "war_q9",
+            "question": "Reserve duty of a first-degree family member",
+            "type": "boolean",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "war_q10",
+            "question": "Another significant event during this period in the context of the war. If so, specify:",
+            "type": "boolean_with_text",
+            "options": ["Yes", "No"]
+          }
+        ]
+      }
+    ],
+    "research_questions": [
+      {
+        "section": "Motivation at Work (MWMS)",
+        "scale": ["Not at all", "Very little", "A little", "Moderately", "To a large extent", "To a very large extent", "Absolutely"],
+        "questions": [
+          { "id": "mwms_1", "question": "I don't put in effort because I feel it's a waste of time." },
+          { "id": "mwms_2", "question": "I put in little effort because I don't think it's worth investing in this job." },
+          { "id": "mwms_3", "question": "I don't know why I do this job, it's pointless." },
+          { "id": "mwms_4", "question": "I put effort into the job in order to get others' approval." },
+          { "id": "mwms_5", "question": "I put effort into the job because that way others will respect me more." },
+          { "id": "mwms_6", "question": "I put effort into the job in order to avoid criticism from others." },
+          { "id": "mwms_7", "question": "I put effort into the job because I will only get financial reward if I put enough effort into my work." },
+          { "id": "mwms_8", "question": "I put effort into the job because others offer me job security only if I put enough effort into the work." },
+          { "id": "mwms_9", "question": "I put effort into the job because there is a risk I will lose the job if I don't put enough effort into performing the role." },
+          { "id": "mwms_10", "question": "I put effort into the job in order to prove to myself that I can." },
+          { "id": "mwms_11", "question": "I put effort into the job so that I can be proud of myself." },
+          { "id": "mwms_12", "question": "I put effort into the job because if I don't, I will be ashamed of myself." },
+          { "id": "mwms_13", "question": "I put effort into the job because if I don't, I will feel bad about myself." },
+          { "id": "mwms_14", "question": "I put effort into the job because it is personally important to me to invest in the work." },
+          { "id": "mwms_15", "question": "I put effort into the job because putting effort into work aligns with my values." },
+          { "id": "mwms_16", "question": "I put effort into the job because investing in the work is personally meaningful to me." },
+          { "id": "mwms_17", "question": "I put effort into the job because I enjoy doing the work." },
+          { "id": "mwms_18", "question": "I put effort into the job because what I do at work excites me." },
+          { "id": "mwms_19", "question": "I put effort because what I do at work is interesting." }
+        ]
+      },
+      {
+        "section": "Basic Psychological Need Satisfaction at Work (BPNS-W)",
+        "scale": ["Strongly disagree (1)", "2", "3", "Neutral (4)", "5", "6", "Strongly agree (7)"],
+        "questions": [
+          { "id": "bpns_1", "question": "At work, I feel I have the freedom to choose the tasks I perform." },
+          { "id": "bpns_2", "question": "I feel left out of the group I want to belong to at work." },
+          { "id": "bpns_3", "question": "I feel confident in my ability to perform my tasks well at work." },
+          { "id": "bpns_4", "question": "People I care about at work also show they care about me." },
+          { "id": "bpns_5", "question": "Regarding most of the tasks I perform at work, I feel an obligation and a lack of choice." },
+          { "id": "bpns_6", "question": "When I am at work, I have great doubt about my ability to perform the tasks well." },
+          { "id": "bpns_7", "question": "I feel that the decisions I make at work reflect my true will." },
+          { "id": "bpns_8", "question": "I feel that people who are important to me at work express coldness and distance towards me." },
+          { "id": "bpns_9", "question": "At work, I feel capable of performing my role." },
+          { "id": "bpns_10", "question": "I feel pressured/forced to do many things at work that I would not have chosen to do." },
+          { "id": "bpns_11", "question": "I am disappointed with my performance at work." },
+          { "id": "bpns_12", "question": "I feel connected to people at work; they care about me and I care about them." },
+          { "id": "bpns_13", "question": "I feel that my choices at work reflect who I really am." },
+          { "id": "bpns_14", "question": "When I am at work, I feel capable of achieving my goals." },
+          { "id": "bpns_15", "question": "In too many things I do at work, I feel forced." },
+          { "id": "bpns_16", "question": "At work, I feel close and connected to the people who are important to me." },
+          { "id": "bpns_17", "question": "I feel insecure about my abilities to perform the role." },
+          { "id": "bpns_18", "question": "My daily tasks at work feel like a sequence of obligations." },
+          { "id": "bpns_19", "question": "I feel that I do what really interests me at work." },
+          { "id": "bpns_20", "question": "I have the impression that the people I am with at work do not like me." },
+          { "id": "bpns_21", "question": "Within my role, I feel that I can successfully perform optional/voluntary tasks." },
+          { "id": "bpns_22", "question": "I feel that the relationships I have at work are superficial." },
+          { "id": "bpns_23", "question": "When I am at work, I feel like a failure because of the mistakes I make." },
+          { "id": "bpns_24", "question": "I feel warmth among the people I am with at work." }
+        ]
+      },
+      {
+        "section": "Role Clarity",
+        "scale": ["Strongly disagree", "Generally disagree", "Disagree slightly", "Agree slightly", "Generally agree", "Strongly agree"],
+        "questions": [
+          { "id": "role_1", "question": "I know exactly what I am supposed to do within my role." },
+          { "id": "role_2", "question": "I understand well which of my tasks at work are more important than others." },
+          { "id": "role_3", "question": "My areas of responsibility at work are clear and well-defined." },
+          { "id": "role_4", "question": "My supervisor clearly explains the work expectations to me." },
+          { "id": "role_5", "question": "My supervisor 'keeps me in the loop' regarding issues that affect my work." },
+          { "id": "role_6", "question": "My direct supervisor tells me when I do a good job." },
+          { "id": "role_7", "question": "My supervisor sufficiently guides me on how to perform my work." }
+        ]
+      },
+      {
+        "section": "Optimal Functioning of Peers (ROPP)",
+        "scale": ["Not relevant", "Not at all true for me", "Slightly true for me", "Somewhat true for me", "True for me", "Very true for me"],
+        "questions": [
+          { "id": "ropp_1", "question": "As a peer, I mostly use my personal story." },
+          { "id": "ropp_2", "question": "My relationships with the individuals I support are reciprocal." },
+          { "id": "ropp_3", "question": "As a peer, I share my experiences with the mental health system with the staff I work with." },
+          { "id": "ropp_4", "question": "I express empathy towards the individuals I support in every situation." },
+          { "id": "ropp_5", "question": "Working as a peer is not just a job, but a personal mission for me." },
+          { "id": "ropp_6", "question": "I have social connections with other peers." },
+          { "id": "ropp_7", "question": "I am open to learning from the experience of the people I support." },
+          { "id": "ropp_8", "question": "I have a network of peers with whom I am in regular contact." },
+          { "id": "ropp_9", "question": "I tell the people I support about my recovery experiences." },
+          { "id": "ropp_10", "question": "I can be with the people I support even in difficult situations." },
+          { "id": "ropp_11", "question": "Working as a peer holds personal meaning for me." },
+          { "id": "ropp_12", "question": "As a peer, I tell staff members at my work about my mental health difficulties and my recovery." },
+          { "id": "ropp_13", "question": "I feel comfortable using my personal lived experience as a peer." },
+          { "id": "ropp_14", "question": "I use my work as a peer to promote other professional goals outside the organization where I work." },
+          { "id": "ropp_15", "question": "As a peer, I invest less energy in hiding my psychiatric difficulties." },
+          { "id": "ropp_16", "question": "My work as a peer has reduced my feeling of social isolation." },
+          { "id": "ropp_17", "question": "I can afford to be more authentic and direct with the people I support compared to other professionals." },
+          { "id": "ropp_18", "question": "I believe that the person I support is responsible for their own recovery process." },
+          { "id": "ropp_19", "question": "I talk with the people I support about practical solutions that worked for me." },
+          { "id": "ropp_20", "question": "My work as a peer strengthens a sense of community for me." },
+          { "id": "ropp_21", "question": "I consult with other peers regarding issues that arise in my work." },
+          { "id": "ropp_22", "question": "I share the lived experience of other peers with the staff." },
+          { "id": "ropp_23", "question": "I share with the people I support self-help strategies that I have used." },
+          { "id": "ropp_24", "question": "As a peer, I encourage professionals to consult with me on issues related to mental health service recipients." },
+          { "id": "ropp_25", "question": "I talk about inspiring moments in my recovery with the people I support." },
+          { "id": "ropp_26", "question": "As a peer, I feel connected to something broader beyond 'just a job'." },
+          { "id": "ropp_27", "question": "I am almost a friend to the clients I serve." },
+          { "id": "ropp_28", "question": "I enjoy a sense of camaraderie with the other peers." },
+          { "id": "ropp_29", "question": "I participate in a peer group that supports my work as a peer." },
+          { "id": "ropp_30", "question": "I know how, what, and when to share parts of my personal story in order to help my service recipients." },
+          { "id": "ropp_31", "question": "As a peer, I feel I have a unique professional niche." },
+          { "id": "ropp_32", "question": "As a peer, I share with service recipients the experience I had with the healthcare system." }
+        ]
+      },
+      {
+        "section": "Iron Swords War Context - Subjective Impact",
+        "scale": ["Not at all (1)", "To a small extent (2)", "To a moderate extent (3)", "To a large extent (4)", "To a very large extent (5)"],
+        "questions": [
+          {
+            "id": "war_q1",
+            "question": "The security situation affected my work as a peer.",
+            "type": "likert_with_open_elaboration"
+          },
+          {
+            "id": "war_q2",
+            "question": "Since the beginning of the war, the workload in my job has increased.",
+            "type": "likert_with_open_elaboration"
+          },
+          {
+            "id": "war_q3",
+            "question": "Since the beginning of the war, my role feels more meaningful.",
+            "type": "likert_with_open_elaboration"
+          },
+          {
+            "id": "war_q4",
+            "question": "Since the beginning of the war, my emotional/mental difficulty has intensified.",
+            "type": "likert_with_open_elaboration"
+          }
+        ]
+      }
+    ]
+  }
