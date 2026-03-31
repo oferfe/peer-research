@@ -1,450 +1,262 @@
 import streamlit as st
-import json
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
 import os
-import re
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(ROOT, 'data')
-REPORTS_DIR = os.path.join(ROOT, 'reports')
+from utils import (
+    DATA_DIR, REPORTS_DIR,
+    load_json, load_text,
+    ans_text, reasoning,
+    build_scores_df, parse_validation, split_bio,
+)
 
 st.set_page_config(
-    page_title="Peer Support Workers — Synthetic Survey POC",
+    page_title="עובדי תמיכת עמיתים — סקר סינתטי",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS ──────────────────────────────────────────────────────────────
+# ── RTL + Custom CSS ──────────────────────────────────────────────────────────
 st.markdown("""
 <style>
+  /* RTL layout */
+  .stApp, [data-testid="stAppViewContainer"] { direction: rtl; }
+  [data-testid="stSidebar"] > div { direction: rtl; }
+  .element-container p, .element-container li,
+  .element-container h1, .element-container h2,
+  .element-container h3, .stMarkdown { direction: rtl; text-align: right; }
+
   .metric-card {
-    background: #f0f4ff;
-    border-radius: 12px;
-    padding: 18px 22px;
-    text-align: center;
-    border: 1px solid #d0d8f0;
+    background: #f0f4ff; border-radius: 12px; padding: 18px 22px;
+    text-align: center; border: 1px solid #d0d8f0;
   }
   .metric-card .value { font-size: 2.2rem; font-weight: 700; color: #1a3a8f; }
   .metric-card .label { font-size: 0.85rem; color: #555; margin-top: 4px; }
-  .persona-card {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  }
-  .tag {
-    display: inline-block;
-    background: #e8eeff;
-    color: #1a3a8f;
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 0.78rem;
-    margin: 2px;
-  }
-  .war-tag {
-    display: inline-block;
-    background: #fff0f0;
-    color: #8f1a1a;
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 0.78rem;
-    margin: 2px;
-  }
   .reasoning-box {
-    background: #f8f9fc;
-    border-left: 4px solid #4a6cf7;
-    border-radius: 0 8px 8px 0;
-    padding: 12px 16px;
-    margin: 8px 0;
-    font-style: italic;
-    color: #333;
-  }
-  .step-card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 18px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    height: 100%;
-  }
-  .step-num {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #4a6cf7;
-    line-height: 1;
+    background: #f8f9fc; border-right: 4px solid #4a6cf7;
+    border-radius: 8px 0 0 8px; padding: 12px 16px; margin: 8px 0;
+    font-style: italic; color: #333; direction: rtl; text-align: right;
   }
 </style>
 """, unsafe_allow_html=True)
 
 
-# ── Data Loading ────────────────────────────────────────────────────────────
+# ── Data ──────────────────────────────────────────────────────────────────────
 @st.cache_data
-def load_json(path):
-    if not os.path.exists(path):
-        return None
-    with open(path, 'r', encoding='utf-8-sig') as f:
-        return json.load(f)
-
+def _load_json(p): return load_json(p)
 @st.cache_data
-def load_text(path):
-    if not os.path.exists(path):
-        return None
-    with open(path, 'r', encoding='utf-8') as f:
-        return f.read()
+def _load_text(p): return load_text(p)
 
-simulated  = load_json(os.path.join(DATA_DIR, 'final_simulated_responses.json')) or []
-personas   = load_json(os.path.join(DATA_DIR, 'personas_with_bios.json')) or []
-validation_text = load_text(os.path.join(REPORTS_DIR, 'reverse_validation_report.txt'))
+simulated       = _load_json(os.path.join(DATA_DIR, 'final_simulated_responses_he.json')) or []
+personas        = _load_json(os.path.join(DATA_DIR, 'personas_with_bios_he.json')) or []
+validation_text = _load_text(os.path.join(REPORTS_DIR, 'reverse_validation_report.txt'))
 
 
-# ── Scoring Logic (mirrors clinical_cases.py) ────────────────────────────────
-mwms_scale       = {"Not at all": 1, "Very little": 2, "A little": 3, "Moderately": 4,
-                    "To a large extent": 5, "To a very large extent": 6, "Absolutely": 7}
-role_clarity_scale = {"Strongly disagree": 1, "Generally disagree": 2, "Disagree slightly": 3,
-                      "Agree slightly": 4, "Generally agree": 5, "Strongly agree": 6}
-ropp_scale       = {"Not relevant": 1, "Not at all true for me": 2, "Slightly true for me": 3,
-                    "Somewhat true for me": 4, "True for me": 5, "Very true for me": 6}
-mwms_keys = {"Amotivation": [1,2,3], "Extrinsic Social": [4,5,6], "Extrinsic Material": [7,8,9],
-             "Introjected": [10,11,12,13], "Identified": [14,15,16], "Intrinsic": [17,18,19]}
-bpns_keys = {"Autonomy":   [1,'5R',7,'10R',13,'15R','18R',21],
-             "Competence": [3,'6R',9,'11R',14,'17R','23R'],
-             "Relatedness":['2R',4,'8R',12,16,'20R','22R',24]}
-role_keys = {"Total": [1,2,3,4,5,6,7]}
-ropp_keys = {"Peer Functioning": list(range(1, 33))}
-
-def _ans_text(obj):
-    return obj.get("answer", "N/A") if isinstance(obj, dict) else str(obj)
-
-def _reasoning(obj):
-    return obj.get("reasoning", "No reasoning provided.") if isinstance(obj, dict) else "No reasoning provided."
-
-def _extract_number(value):
-    """Get numeric scale value from answer (int, float, or string like '4' or 'Moderately')."""
-    if value is None: return None
-    if isinstance(value, (int, float)):
-        return int(value) if 1 <= value <= 7 else None
-    s = str(value).strip()
-    if s.isdigit():
-        return int(s)
-    # Try first number in string (e.g. "To a large extent (4)" -> 4)
-    for part in re.findall(r"\d+", s):
-        n = int(part)
-        if 1 <= n <= 7:
-            return n
-    return None
-
-def _raw_score(prefix, answer_value, max_scale):
-    """Resolve answer to a numeric raw score (1..max_scale). Handles both text and numeric LLM output."""
-    # Try text→number scale first (for MWMS, role, ROPP)
-    if prefix == "mwms":
-        raw = mwms_scale.get(answer_value if isinstance(answer_value, str) else str(answer_value))
-    elif prefix == "role":
-        raw = role_clarity_scale.get(answer_value if isinstance(answer_value, str) else str(answer_value))
-    elif prefix == "ropp":
-        raw = ropp_scale.get(answer_value if isinstance(answer_value, str) else str(answer_value))
-    elif prefix == "bpns":
-        raw = _extract_number(answer_value)
-        if raw is not None and (raw < 1 or raw > max_scale):
-            raw = None
-        return raw
-    else:
-        raw = None
-    # If not in scale dict, treat as numeric (LLM often returns 1–7 or 1–6)
-    if raw is None:
-        raw = _extract_number(answer_value)
-        if raw is not None and raw > max_scale:
-            raw = None
-    return raw
-
-def _subscale(answers, prefix, keys, max_scale):
-    # Normalize keys to lowercase (JSON may have rOpp_1 etc.)
-    answers_lower = {k.lower(): v for k, v in answers.items()}
-    scores = []
-    for item in keys:
-        rev = str(item).endswith('R')
-        qid = f"{prefix}_{str(item).replace('R', '')}".lower()
-        ans_obj = answers_lower.get(qid, {})
-        t = _ans_text(ans_obj)
-        raw = _raw_score(prefix, t, max_scale)
-        if raw is not None:
-            scores.append((max_scale + 1) - raw if rev else raw)
-    return round(sum(scores) / len(scores), 2) if scores else None
-
-def compute_scores(row):
-    ans = row.get('survey_answers', {})
-    s = {}
-    for k, v in mwms_keys.items():   s[f'MWMS — {k}']         = _subscale(ans, "mwms", v, 7)
-    for k, v in bpns_keys.items():   s[f'BPNS — {k}']         = _subscale(ans, "bpns", v, 7)
-    for k, v in role_keys.items():   s[f'Role Clarity — {k}'] = _subscale(ans, "role", v, 6)
-    for k, v in ropp_keys.items():   s[f'ROPP — {k}']         = _subscale(ans, "ropp", v, 6)
-    return s
-
-
-# ── Validation Report Parser ──────────────────────────────────────────────
-def parse_validation(text):
-    if not text:
-        return [], None
-    respondents = []
-    blocks = re.split(r'--- Respondent ID: (synthetic_\d+) ---', text)
-    for i in range(1, len(blocks), 2):
-        rid     = blocks[i]
-        content = blocks[i+1] if i+1 < len(blocks) else ""
-        m_match   = re.search(r'Total Explicit Matches: (\d+)', content)
-        m_miss    = re.search(r'Total Mismatches: (\d+)', content)
-        m_missing = re.search(r'Missing from Bio Narrative: (\d+)', content)
-        m_acc     = re.search(r'Extraction Accuracy.*?: ([\d.]+)%', content)
-        qs = []
-        for m in re.finditer(
-            r'Question: (.+?)\n\s+Original Data:\s+(.+?)\n\s+Extracted Data:\s+(.+?)\n\s+Status:\s+(\[.+?\])',
-            content, re.DOTALL
-        ):
-            qs.append({'Question': m.group(1).strip(), 'Original': m.group(2).strip(),
-                       'Extracted': m.group(3).strip(), 'Status': m.group(4).strip()})
-        respondents.append({
-            'id': rid,
-            'matches':  int(m_match.group(1))   if m_match   else 0,
-            'mismatches': int(m_miss.group(1))  if m_miss    else 0,
-            'missing':  int(m_missing.group(1)) if m_missing else 0,
-            'accuracy': float(m_acc.group(1))   if m_acc     else 0.0,
-            'questions': qs,
-        })
-    overall = re.search(r'OVERALL AVERAGE MATCH SCORE: ([\d.]+)%', text)
-    overall_score = float(overall.group(1)) if overall else None
-    return respondents, overall_score
-
-
-# ── Sidebar ──────────────────────────────────────────────────────────────────
-st.sidebar.title("🧠 PSW Synthetic Survey")
-st.sidebar.caption("Proof of Concept · March 2026")
+# ── Sidebar ───────────────────────────────────────────────────────────────────
+st.sidebar.title("🧠 סקר סינתטי — עמיתים")
+st.sidebar.caption("הוכחת היתכנות · מרץ 2026")
 st.sidebar.divider()
 
-page = st.sidebar.radio("Navigate", [
-    "📋  Overview",
-    "👤  Personas",
-    "📊  Simulation Results",
-    "💬  Sample Responses",
+page = st.sidebar.radio("ניווט", [
+    "📋  סקירה כללית",
+    "👤  משתתפים",
+    "📊  תוצאות הסימולציה",
+    "💬  דוגמאות תשובות",
 ])
 
 st.sidebar.divider()
-st.sidebar.markdown("**Dataset stats**")
-st.sidebar.markdown(f"- Personas with bios: **{len(personas)}**")
-st.sidebar.markdown(f"- Fully simulated: **{len(simulated)}**")
-val_resp, overall_acc = parse_validation(validation_text)
+st.sidebar.markdown("**נתוני מאגר**")
+st.sidebar.markdown(f"- משתתפים עם ביוגרפיה: **{len(personas)}**")
+st.sidebar.markdown(f"- תשובות מלאות לסקר: **{len(simulated)}**")
+
+_, overall_acc = parse_validation(validation_text)
 
 
 # ════════════════════════════════════════════════════════════
-# PAGE: Overview
+# PAGE: סקירה כללית
 # ════════════════════════════════════════════════════════════
-if page == "📋  Overview":
-    st.title("Synthetic Peer Support Worker Survey")
-    st.subheader("Proof of Concept — Summary for Psychologists")
-    st.caption("Synthetic research participants generated by AI to pilot the survey instrument")
-
+if page == "📋  סקירה כללית":
+    st.title("סקר סינתטי לעובדי תמיכת עמיתים")
+    st.subheader("הוכחת היתכנות — דוח סיכום לפסיכולוגים")
+    st.caption("משתתפי מחקר סינתטיים שנוצרו על ידי בינה מלאכותית לצורך פיילוט של כלי המחקר")
     st.divider()
 
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(f"""<div class="metric-card"><div class="value">{len(personas)}</div>
-        <div class="label">Synthetic respondents with biographies</div></div>""", unsafe_allow_html=True)
+        <div class="label">משתתפים סינתטיים עם ביוגרפיות</div></div>""",
+                    unsafe_allow_html=True)
     with c2:
         st.markdown(f"""<div class="metric-card"><div class="value">{len(simulated)}</div>
-        <div class="label">Fully simulated survey responses</div></div>""", unsafe_allow_html=True)
+        <div class="label">תשובות מלאות לסקר</div></div>""",
+                    unsafe_allow_html=True)
 
     st.divider()
 
     col_l, col_r = st.columns([3, 2])
     with col_l:
-        st.markdown("### What Are We Showing Here?")
+        st.markdown("### מה אנחנו מציגים כאן?")
         st.markdown("""
-Each synthetic respondent is a realistic fictional **Peer Support Worker (PSW)** in Israel, created by an AI system.
-The AI:
-1. Randomly generates a demographic and occupational profile
-2. Writes a coherent biographical narrative for that person
-3. Has the persona complete the full research survey — answering every question with an explanation of *why*
+כל משתתף סינתטי הוא **עובד/ת תמיכת עמיתים (PSW)** פיקטיבי/ת וריאליסטי/ת בישראל, שנוצר/ה על ידי מערכת בינה מלאכותית.
+הבינה המלאכותית:
+1. יוצרת פרופיל דמוגרפי ותעסוקתי אקראי
+2. כותבת נרטיב ביוגרפי קוהרנטי עבור אותו האדם
+3. מגיבה לשאלון המחקר המלא — עונה לכל שאלה עם הסבר *מדוע*
 
-This lets us **review and refine the survey instrument** before recruiting real participants.
+זה מאפשר לנו **לבחון ולשכלל את כלי המחקר** לפני גיוס משתתפים אמיתיים.
         """)
 
-        st.markdown("### Research Context")
+        st.markdown("### הקשר המחקרי")
         st.markdown("""
-**Peer Support Workers (PSWs)** are individuals with lived mental health experience who are employed to support others
-in the mental health system. This survey examines their:
-- Work motivation (what drives them)
-- Psychological needs satisfaction at work
-- Role clarity
-- Functioning in the peer role
+**עובדי תמיכת עמיתים (PSW)** הם אנשים בעלי ניסיון חיים אישי עם מצוקה נפשית, המועסקים לתמיכה באחרים
+במערכת בריאות הנפש. הסקר בוחן:
+- מוטיבציה לעבודה (מה מניע אותם)
+- סיפוק צרכים פסיכולוגיים בסיסיים בעבודה
+- בהירות תפקיד
+- תפקוד בתפקיד העמיתים
 
-All of this is studied in the context of the **Iron Swords war** (October 2023 onward) and its effects on PSW wellbeing and work.
+כל זאת נבחן בהקשר של **מלחמת חרבות ברזל** (אוקטובר 2023 ואילך) והשפעתה על רווחת העובדים ועבודתם.
         """)
 
     with col_r:
-        st.markdown("### Psychological Scales")
+        st.markdown("### סולמות פסיכולוגיים")
         st.table(pd.DataFrame({
-            "Scale": ["Work Motivation", "Basic Psychological Needs", "Role Clarity", "Peer Functioning"],
-            "Instrument": ["MWMS", "BPNS", "Role Clarity Q.", "ROPP"],
-            "Items": [19, 24, 7, 32],
-            "Response Range": ["1 – 7", "1 – 7", "1 – 6", "1 – 6"],
+            "סולם":         ["מוטיבציה לעבודה", "צרכים פסיכולוגיים בסיסיים", "בהירות תפקיד", "תפקוד כעמית"],
+            "כלי מדידה":    ["MWMS", "BPNS", "שאלון בהירות", "ROPP"],
+            "פריטים":       [19, 24, 7, 32],
+            "טווח תגובה":   ["1 – 7", "1 – 7", "1 – 6", "1 – 6"],
         }))
-        st.markdown("### War Impact Questions")
+        st.markdown("### שאלות השפעת המלחמה")
         st.markdown("""
-Each respondent's profile includes **factual war exposures** (evacuation, protected space, reserve duty, bereavement)
-and **subjective war impact** across 4 Likert-scale questions about how the security situation affected their work.
+פרופיל כל משתתף כולל **חשיפות מלחמה עובדתיות** (פינוי, ממ״ד, מילואים, שכול)
+ו**השפעה סובייקטיבית** ב-4 שאלות ליקרט על השפעת מצב הביטחון על עבודתם.
         """)
 
 
 # ════════════════════════════════════════════════════════════
-# PAGE: Personas
+# PAGE: משתתפים
 # ════════════════════════════════════════════════════════════
-elif page == "👤  Personas":
-    st.title("Synthetic Respondents")
-    st.caption("Background profiles and biographical narratives for each synthetic PSW")
+elif page == "👤  משתתפים":
+    st.title("משתתפים סינתטיים")
+    st.caption("פרופילי רקע ונרטיבים ביוגרפיים לכל עובד/ת עמיתים סינתטי/ת")
     st.divider()
 
     if not personas:
-        st.warning("No personas available yet.")
+        st.warning("אין משתתפים זמינים עדיין.")
     else:
-        WAR_FACTUAL = {
-            "war_q5": "Evacuated from home",
-            "war_q6": "Repeated stays in protected space",
-            "war_q7": "Loss of a close person",
-            "war_q8": "Own reserve duty",
-            "war_q9": "Family member in reserves",
-            "war_q10": "Other significant war event",
+        WAR_FACTUAL_HE = {
+            "war_q5":  "פינוי מהבית",
+            "war_q6":  "שהייה חוזרת בממ״ד",
+            "war_q7":  "אובדן אדם קרוב",
+            "war_q8":  "שירות מילואים עצמי",
+            "war_q9":  "שירות מילואים של בן/בת משפחה",
+            "war_q10": "אירוע מלחמתי משמעותי אחר",
         }
-        WAR_SUBJECTIVE = {
-            "war_q1": "Security situation affected my work",
-            "war_q2": "Workload increased since the war",
-            "war_q3": "Role feels more meaningful since the war",
-            "war_q4": "Emotional/mental difficulty intensified",
+        WAR_SUBJ_HE = {
+            "war_q1": "מצב הביטחון השפיע על עבודתי כעמית",
+            "war_q2": "עומס העבודה גדל מאז תחילת המלחמה",
+            "war_q3": "תחושת משמעות בתפקיד גברה מאז המלחמה",
+            "war_q4": "הקושי הרגשי/נפשי התגבר מאז המלחמה",
         }
-        PROFILE_LABELS = {
-            "psychiatric_diagnosis": "Psychiatric diagnosis",
-            "occ_q1": "Role",
-            "occ_q2": "Role type",
-            "occ_q3": "Peer training",
-            "occ_q4": "Work setting",
-            "occ_q5": "Support modality",
-            "occ_q6": "Seniority",
-            "occ_q9": "Weekly scope",
-            "occ_q11": "Monthly income",
-            "occ_q12": "Diagnosis disclosed to manager",
-            "occ_q13": "Diagnosis disclosed to colleagues",
-            "occ_q14": "Diagnosis disclosed to recipients",
-            "demo_q2": "Gender",
-            "demo_q3": "Marital status",
-            "demo_q4": "Children",
-            "demo_q5": "Housing",
-            "demo_q6": "Secondary education",
-            "demo_q7": "Post-secondary education",
-            "demo_q9": "Region",
+        PROFILE_LABELS_HE = {
+            "psychiatric_diagnosis": "אבחנה פסיכיאטרית",
+            "occ_q1":  "תפקיד",
+            "occ_q2":  "סוג תפקיד",
+            "occ_q3":  "הכשרה לתפקיד עמית",
+            "occ_q4":  "מסגרת עבודה",
+            "occ_q5":  "אופן תמיכה",
+            "occ_q6":  "ותק",
+            "occ_q9":  "היקף שבועי",
+            "occ_q11": "הכנסה חודשית",
+            "occ_q12": "חשיפת אבחנה — מנהל/ת",
+            "occ_q13": "חשיפת אבחנה — עמיתים לעבודה",
+            "occ_q14": "חשיפת אבחנה — מקבלי שירות",
+            "demo_q2": "מגדר",
+            "demo_q3": "מצב משפחתי",
+            "demo_q4": "ילדים",
+            "demo_q5": "דיור",
+            "demo_q6": "השכלה תיכונית",
+            "demo_q7": "השכלה על-תיכונית",
+            "demo_q9": "אזור מגורים",
         }
 
         for persona in personas:
-            pid   = persona.get("respondent_id", "Unknown")
-            prof  = persona.get("profile", {})
-            bio   = persona.get("biography", "No biography available.")
+            pid  = persona.get("respondent_id", "Unknown")
+            prof = persona.get("profile", {})
+            bio  = persona.get("biography", "")
+            tldr, bio_clean = split_bio(bio)
 
-            bio_clean   = re.sub(r'\*\*TL;DR Summary:\*\*.*?\*\*Full Biography:\*\*\n?', '', bio, flags=re.DOTALL).strip()
-            tldr_match  = re.search(r'\*\*TL;DR Summary:\*\*\n?(.*?)\n\n', bio, re.DOTALL)
-            tldr        = tldr_match.group(1).strip() if tldr_match else ""
-
-            war_events = [label for key, label in WAR_FACTUAL.items() if prof.get(key) == "Yes"]
-
-            diag  = prof.get("psychiatric_diagnosis", "Unknown")
-            setting = prof.get("occ_q4", "Unknown setting")
+            diag    = prof.get("psychiatric_diagnosis", "לא ידוע")
+            setting = prof.get("occ_q4", "מסגרת לא ידועה")
 
             with st.expander(f"**{pid}** — {diag} · {setting}", expanded=True):
-                tab_bio, tab_profile, tab_war = st.tabs(["📖 Biography", "👤 Profile", "⚔️ War Context"])
+                tab_bio, tab_profile, tab_war = st.tabs(["📖 ביוגרפיה", "👤 פרופיל", "⚔️ הקשר מלחמה"])
 
                 with tab_bio:
                     if tldr:
-                        st.info(f"**In brief:** {tldr}")
+                        st.info(f"**בקצרה:** {tldr}")
                     st.markdown(bio_clean)
 
                 with tab_profile:
-                    rows = [(label, prof[key]) for key, label in PROFILE_LABELS.items() if key in prof]
-                    st.dataframe(pd.DataFrame(rows, columns=["Field", "Value"]),
-                                 use_container_width=True, hide_index=True)
+                    rows = [(PROFILE_LABELS_HE.get(key, key), prof[key])
+                            for key in PROFILE_LABELS_HE if key in prof]
+                    st.dataframe(
+                        pd.DataFrame(rows, columns=["שדה", "ערך"]),
+                        use_container_width=True, hide_index=True,
+                    )
 
                 with tab_war:
                     col_fact, col_subj = st.columns(2)
                     with col_fact:
-                        st.markdown("**Factual exposures**")
-                        for key, label in WAR_FACTUAL.items():
-                            val = prof.get(key, "—")
-                            icon = "✅" if val == "Yes" else "❌"
+                        st.markdown("**חשיפות עובדתיות**")
+                        for key, label in WAR_FACTUAL_HE.items():
+                            val  = prof.get(key, "—")
+                            icon = "✅" if val in ("Yes", "כן") else "❌"
                             st.markdown(f"{icon} {label}")
                     with col_subj:
-                        st.markdown("**Subjective impact (pre-set level)**")
-                        for key, label in WAR_SUBJECTIVE.items():
+                        st.markdown("**השפעה סובייקטיבית (ברמה מוגדרת מראש)**")
+                        for key, label in WAR_SUBJ_HE.items():
                             val = prof.get(key, "—")
                             if val and val != "—":
                                 st.markdown(f"- **{label}:** {val}")
                             else:
-                                st.markdown(f"- {label}: *not set*")
+                                st.markdown(f"- {label}: *לא הוגדר*")
 
 
 # ════════════════════════════════════════════════════════════
-# PAGE: Simulation Results
+# PAGE: תוצאות הסימולציה
 # ════════════════════════════════════════════════════════════
-elif page == "📊  Simulation Results":
-    st.title("Survey Results")
-    st.caption("Psychological scale scores computed from each simulated respondent's answers")
+elif page == "📊  תוצאות הסימולציה":
+    st.title("תוצאות הסקר")
+    st.caption("ציוני סולמות פסיכולוגיים שחושבו מתוך תשובות כל משתתף/ת סינתטי/ת")
     st.divider()
 
     if not simulated:
-        st.warning("No simulation data available yet.")
+        st.warning("אין נתוני סימולציה זמינים עדיין.")
     else:
-        # ── Build scored dataframe ─────────────────────────────────
-        scored_rows = []
-        for row in simulated:
-            s = compute_scores(row)
-            s["Respondent"] = row["respondent_id"]
-            s["Diagnosis"]  = row.get("profile", {}).get("psychiatric_diagnosis", "—")
-            s["Setting"]    = row.get("profile", {}).get("occ_q4", "—")
-            scored_rows.append(s)
+        df, score_cols, dropped = build_scores_df(simulated, hebrew=True)
+        meta_he = ["מזהה", "אבחנה", "מסגרת"]
 
-        df = pd.DataFrame(scored_rows)
-        meta_cols = ["Respondent", "Diagnosis", "Setting"]
-
-        # Only show score columns where ≥30% of respondents have a value.
-        # Columns with sparser data (e.g. MWMS subscales when the LLM skipped items)
-        # are moved to an "incomplete" note so the main table stays clean.
-        MIN_COVERAGE = 0.30
-        all_score_cols = [c for c in df.columns if c not in meta_cols
-                          and pd.api.types.is_numeric_dtype(df[c])]
-        score_cols = [c for c in all_score_cols
-                      if df[c].notna().mean() >= MIN_COVERAGE]
-        dropped    = [c for c in all_score_cols if c not in score_cols]
         if dropped:
-            coverages = {c: f"{df[c].notna().sum()}/{len(df)} respondents" for c in dropped}
             st.warning(
-                f"**{len(dropped)} subscale(s) hidden** — not enough simulation data "
-                f"(fewer than {int(MIN_COVERAGE*100)}% of respondents answered them). "
-                f"Re-run the simulation to populate these.\n\n"
-                + "\n".join(f"- *{c}*: {v}" for c, v in coverages.items())
+                f"**{len(dropped)} תת-סולם/ות הוסתרו** — אין מספיק נתוני סימולציה "
+                f"(פחות מ-30% מהמשתתפים ענו עליהם). יש להריץ את הסימולציה מחדש.\n\n"
+                + "\n".join(f"- *{c}*" for c in dropped)
             )
 
-        # ── Full results table + Mean row ─────────────────────────
-        st.markdown("### All Respondents — Score Table")
+        st.markdown("### כל המשתתפים — טבלת ציונים")
+        ordered   = meta_he + score_cols
+        df_scores = df[ordered].copy()
 
-        ordered_cols = meta_cols + score_cols
-        df_scores = df[ordered_cols].copy()
-
-        # Append a Mean summary row
         mean_vals = df[score_cols].mean()
-        mean_row  = {c: "— (mean)" if c == "Respondent" else "—" if c in ("Diagnosis", "Setting")
-                     else round(mean_vals[c], 2) for c in ordered_cols}
         std_vals  = df[score_cols].std()
-        std_row   = {c: "— (std)" if c == "Respondent" else "—" if c in ("Diagnosis", "Setting")
-                     else round(std_vals[c], 2) for c in ordered_cols}
+        mean_row  = {c: "— (ממוצע)" if c == "מזהה" else "—" if c in ("אבחנה", "מסגרת")
+                     else round(mean_vals[c], 2) for c in ordered}
+        std_row   = {c: "— (סט״ד)"  if c == "מזהה" else "—" if c in ("אבחנה", "מסגרת")
+                     else round(std_vals[c], 2) for c in ordered}
 
-        df_with_summary = pd.concat(
+        df_summary = pd.concat(
             [df_scores,
              pd.DataFrame([mean_row], index=["__mean__"]),
              pd.DataFrame([std_row],  index=["__std__"])],
@@ -452,61 +264,50 @@ elif page == "📊  Simulation Results":
         )
 
         def _fmt(val):
-            try:
-                return f"{float(val):.2f}"
-            except (ValueError, TypeError):
-                return str(val) if val is not None else "—"
+            try: return f"{float(val):.2f}"
+            except (ValueError, TypeError): return str(val) if val is not None else "—"
 
-        # Style: bold the last two rows (mean + std)
         n_data = len(df_scores)
-
         def highlight_summary(s):
             return ["font-weight: bold; background: #f0f4ff" if i >= n_data else ""
                     for i in range(len(s))]
 
-        fmt_dict = {c: _fmt for c in score_cols}
         styled = (
-            df_with_summary.style
+            df_summary.style
             .format({c: _fmt for c in score_cols}, na_rep="—")
             .apply(highlight_summary, axis=0)
         )
         st.dataframe(styled, use_container_width=True,
-                     height=min(600, 80 + 35 * len(df_with_summary)))
+                     height=min(600, 80 + 35 * len(df_summary)))
         st.caption(
-            "Scores: 1–7 for BPNS and MWMS, 1–6 for Role Clarity and ROPP. "
-            "Higher = more of that dimension. "
-            "Bold rows = **Mean** (central tendency) and **Std** (variability)."
+            "ציונים: 1–7 עבור BPNS ו-MWMS, 1–6 עבור בהירות תפקיד ו-ROPP. "
+            "ציון גבוה יותר = יותר מאותה מימד. "
+            "שורות מודגשות = **ממוצע** (נטייה מרכזית) ו-**סטיית תקן** (שונות)."
         )
-
         st.divider()
 
-        # ── Mean & Std summary table ────────────────────────────────
-        st.markdown("### Similarity & Variability Across Respondents")
+        st.markdown("### דמיון ושונות בין המשתתפים")
         summary_df = pd.DataFrame({
-            "Scale":         score_cols,
-            "Mean":          [round(mean_vals[c], 2) for c in score_cols],
-            "Std Dev":       [round(std_vals[c],  2) for c in score_cols],
-            "Min":           [round(df[c].min(),  2) for c in score_cols],
-            "Max":           [round(df[c].max(),  2) for c in score_cols],
+            "סולם":       score_cols,
+            "ממוצע":      [round(mean_vals[c], 2) for c in score_cols],
+            "סטיית תקן":  [round(std_vals[c],  2) for c in score_cols],
+            "מינימום":    [round(df[c].min(),  2) for c in score_cols],
+            "מקסימום":    [round(df[c].max(),  2) for c in score_cols],
         })
-        st.dataframe(summary_df.set_index("Scale"), use_container_width=True)
+        st.dataframe(summary_df.set_index("סולם"), use_container_width=True)
         st.caption(
-            "**Std Dev ≈ 0** → all respondents answered similarly. "
-            "**Std Dev > 0.5** → meaningful variability across respondents."
+            "**סט״ד ≈ 0** ← כל המשתתפים ענו באופן דומה. "
+            "**סט״ד > 0.5** ← שונות משמעותית בין המשתתפים."
         )
 
-        # ── Bar chart: mean per scale ──────────────────────────────
-        st.markdown("### Mean Scores — Visual Overview")
-        fig_bar = go.Figure()
-        scale_ranges = {}
-        for c in score_cols:
-            if "BPNS" in c or "MWMS" in c: scale_ranges[c] = 7
-            else: scale_ranges[c] = 6
-
-        bar_colors = ["#4a6cf7" if "BPNS" in c else "#26a69a" if "ROPP" in c
-                      else "#f7a44a" if "Role" in c else "#9c4af7"
-                      for c in score_cols]
-        fig_bar.add_trace(go.Bar(
+        st.markdown("### ממוצע ציונים — תצוגה ויזואלית")
+        bar_colors = [
+            "#4a6cf7" if "BPNS" in c else "#26a69a" if "ROPP" in c
+            else "#f7a44a" if "בהירות" in c else "#9c4af7"
+            for c in score_cols
+        ]
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
             x=score_cols,
             y=[round(mean_vals[c], 2) for c in score_cols],
             error_y=dict(type="data", array=[round(std_vals[c], 2) for c in score_cols], visible=True),
@@ -514,95 +315,103 @@ elif page == "📊  Simulation Results":
             text=[f"{mean_vals[c]:.2f}" for c in score_cols],
             textposition="outside",
         ))
-        fig_bar.update_layout(
+        fig.update_layout(
             xaxis_tickangle=-35,
-            yaxis=dict(range=[0, 7.5], title="Score"),
-            plot_bgcolor="white",
-            height=420,
-            margin=dict(t=30, b=120, l=50, r=20),
-            showlegend=False,
+            yaxis=dict(range=[0, 7.5], title="ציון"),
+            plot_bgcolor="white", height=420,
+            margin=dict(t=30, b=140, l=50, r=20), showlegend=False,
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
-        st.caption("Error bars show ± 1 standard deviation. Colour: blue=BPNS, teal=ROPP, orange=Role Clarity, purple=MWMS.")
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption("פסי שגיאה מציגים ± סטיית תקן אחת. צבעים: כחול=BPNS, טורקיז=ROPP, כתום=בהירות תפקיד, סגול=MWMS.")
 
 
 # ════════════════════════════════════════════════════════════
-# PAGE: Sample Responses
+# PAGE: דוגמאות תשובות
 # ════════════════════════════════════════════════════════════
-elif page == "💬  Sample Responses":
-    st.title("Survey Responses & Reasoning")
-    st.caption("Read how each synthetic respondent answered — and why")
+elif page == "💬  דוגמאות תשובות":
+    st.title("תשובות לסקר והנמקות")
+    st.caption("קראו כיצד כל משתתף/ת סינתטי/ת ענה/תה — ומדוע")
     st.divider()
 
     if not simulated:
-        st.warning("No simulation data available yet.")
+        st.warning("אין נתוני סימולציה זמינים עדיין.")
     else:
-        selected = st.selectbox("Select respondent", [r["respondent_id"] for r in simulated])
+        selected = st.selectbox(
+            "בחר/י משתתף/ת",
+            [r["respondent_id"] for r in simulated],
+        )
         row  = next(r for r in simulated if r["respondent_id"] == selected)
         ans  = row.get("survey_answers", {})
         prof = row.get("profile", {})
 
         st.info(
             f"**{selected}** · {prof.get('psychiatric_diagnosis','—')} · "
-            f"{prof.get('occ_q4','—')} · {prof.get('occ_q6','—')} seniority"
+            f"{prof.get('occ_q4','—')} · ותק: {prof.get('occ_q6','—')}"
         )
         st.divider()
 
-        SECTION_QS = {
-            "⚔️ War Impact": [
-                ("war_q1", "The security situation affected my work as a peer."),
-                ("war_q2", "Since the beginning of the war, the workload in my job has increased."),
-                ("war_q3", "Since the beginning of the war, my role feels more meaningful."),
-                ("war_q4", "Since the beginning of the war, my emotional/mental difficulty has intensified."),
+        SECTION_QS_HE = {
+            "⚔️ השפעת המלחמה": [
+                ("war_q1", "מצב הביטחון השפיע על עבודתי כעמית."),
+                ("war_q2", "מאז תחילת המלחמה, עומס העבודה בתפקידי גדל."),
+                ("war_q3", "מאז תחילת המלחמה, תפקידי מרגיש משמעותי יותר."),
+                ("war_q4", "מאז תחילת המלחמה, הקושי הרגשי/נפשי שלי התגבר."),
             ],
-            "🔵 Basic Psychological Needs (BPNS)": [
-                ("bpns_3",  "I feel confident in my ability to perform my tasks well at work."),
-                ("bpns_9",  "I feel capable of performing my role effectively."),
-                ("bpns_1",  "I feel I have freedom to choose the tasks I perform."),
-                ("bpns_13", "My work reflects who I truly am."),
-                ("bpns_4",  "People I care about at work also show they care about me."),
+            "🔵 צרכים פסיכולוגיים בסיסיים (BPNS)": [
+                ("bpns_3",  "אני מרגיש/ה בטוח/ה ביכולתי לבצע את המשימות שלי היטב בעבודה."),
+                ("bpns_9",  "בעבודה, אני מרגיש/ה מסוגל/ת לבצע את תפקידי."),
+                ("bpns_1",  "בעבודה, אני מרגיש/ה שיש לי חופש לבחור את המשימות שאני מבצע/ת."),
+                ("bpns_13", "אני מרגיש/ה שהבחירות שלי בעבודה משקפות מי שאני באמת."),
+                ("bpns_4",  "אנשים שאכפת לי מהם בעבודה — גם אכפת להם ממני."),
             ],
-            "🟢 Work Motivation (MWMS)": [
-                ("mwms_1",  "I don't put in effort because I feel it's a waste of time."),
-                ("mwms_17", "I put effort in because I enjoy doing the work."),
-                ("mwms_14", "It is personally important to me to invest in the work."),
-                ("mwms_10", "I put effort in to prove to myself that I can."),
+            "🟢 מוטיבציה לעבודה (MWMS)": [
+                ("mwms_1",  "אני לא משקיע/ה מאמץ כי אני מרגיש/ה שזה בזבוז זמן."),
+                ("mwms_17", "אני משקיע/ה מאמץ בעבודה כי אני נהנה/ית לעשות את העבודה."),
+                ("mwms_14", "אני משקיע/ה מאמץ בעבודה כי חשוב לי אישית להשקיע בעבודה."),
+                ("mwms_10", "אני משקיע/ה מאמץ בעבודה כדי להוכיח לעצמי שאני מסוגל/ת."),
             ],
-            "🟡 Role Clarity": [
-                ("role_1", "I know exactly what is expected of me in my role."),
-                ("role_4", "My supervisor gives me clear guidance."),
+            "🟡 בהירות תפקיד": [
+                ("role_1", "אני יודע/ת בדיוק מה אמור/ה לעשות בגדר תפקידי."),
+                ("role_4", "הממונה עלי מסביר/ה לי בבירור את ציפיות העבודה."),
             ],
-            "🟣 Peer Functioning (ROPP)": [
-                ("ropp_13", "I feel comfortable using my personal lived experience as a peer."),
-                ("ropp_4",  "I try to understand the experiences of the people I support."),
-                ("ropp_5",  "Working as a peer is a personal mission for me."),
+            "🟣 תפקוד כעמית (ROPP)": [
+                ("ropp_13", "אני מרגיש/ה בנוח להשתמש בניסיון החיים האישי שלי כעמית."),
+                ("ropp_4",  "אני מביע/ה אמפתיה כלפי האנשים שאני תומך/ת בהם בכל מצב."),
+                ("ropp_5",  "עבודה כעמית אינה רק עבודה, אלא שליחות אישית עבורי."),
             ],
         }
 
-        for section_title, questions in SECTION_QS.items():
+        for section_title, questions in SECTION_QS_HE.items():
             st.markdown(f"### {section_title}")
             for qid, q_text in questions:
-                obj = ans.get(qid) or next((v for k, v in ans.items() if k.lower() == qid.lower()), None)
+                obj = ans.get(qid) or next(
+                    (v for k, v in ans.items() if k.lower() == qid.lower()), None)
                 if obj is None:
                     continue
-                answer_text = _ans_text(obj)
-                reason_text = _reasoning(obj)
                 col_a, col_r = st.columns([1, 3])
                 with col_a:
-                    st.metric(label=q_text[:55] + ("…" if len(q_text) > 55 else ""), value=answer_text)
+                    st.metric(label=q_text[:55] + ("…" if len(q_text) > 55 else ""),
+                              value=ans_text(obj))
                 with col_r:
-                    st.markdown(f'<div class="reasoning-box">"{reason_text}"</div>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<div class="reasoning-box">"{reasoning(obj)}"</div>',
+                        unsafe_allow_html=True,
+                    )
             st.markdown("")
 
         st.divider()
-        st.markdown("### Browse All Answers")
-        search = st.text_input("Filter by question prefix (e.g. bpns, mwms, role, ropp, war)", "")
+        st.markdown("### עיון בכל התשובות")
+        search = st.text_input("סנן לפי קידומת שאלה (למשל: bpns, mwms, role, ropp, war)", "")
         all_rows = []
         for qid, obj in ans.items():
             if search and not qid.lower().startswith(search.lower()):
                 continue
-            all_rows.append({"Question ID": qid, "Answer": _ans_text(obj), "Reasoning": _reasoning(obj)})
+            all_rows.append({
+                "מזהה שאלה": qid,
+                "תשובה":     ans_text(obj),
+                "הנמקה":     reasoning(obj),
+            })
         if all_rows:
             st.dataframe(pd.DataFrame(all_rows), use_container_width=True, hide_index=True)
         else:
-            st.info("No matching questions.")
+            st.info("לא נמצאו שאלות תואמות.")
